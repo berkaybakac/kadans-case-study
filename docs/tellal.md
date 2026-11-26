@@ -1,5 +1,7 @@
 # Tellal: AI announcement platform
 
+Tellal has its own case study: **[berkaybakac/tellal-case-study](https://github.com/berkaybakac/tellal-case-study)**. This page covers what Kadans uses from it.
+
 Tellal is an AI announcement platform I designed and built. It turns verified facts into short spoken announcements: **Claude (Anthropic)** writes the copy and **ElevenLabs** speaks it. Around those two integrations it adds the parts a paid production service needs: factual guardrails, idempotent operations, prepaid balances, spending caps, scoped keys for several clients, and an admin panel. Kadans is its first client.
 
 | | |
