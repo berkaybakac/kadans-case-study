@@ -1,4 +1,4 @@
-# Kadans & Tellal
+# Kadans
 
 **In-store audio and AI announcements for a regional, multi-city grocery chain with 20+ branches. I designed, built and run it in production, end to end, as the sole engineer.**
 
@@ -54,7 +54,7 @@ When a price drops in the customer's ERP, the store hears a short Turkish announ
 
 Costs and rejected alternatives: [design decisions →](docs/decisions.md)
 
-## How it holds up
+## Reliability: how it holds up
 
 | When… | …the system |
 |---|---|
@@ -69,23 +69,9 @@ Costs and rejected alternatives: [design decisions →](docs/decisions.md)
 
 [Engineering notes →](docs/engineering-notes.md)
 
-## Tellal: the AI announcement platform
+## Built on Tellal
 
-Tellal is an AI announcement platform I designed and built; Kadans is its first client. It integrates **Claude (Anthropic)** for copy and **ElevenLabs** for speech, and adds what a paid production service needs around them:
-
-- **Factual safety.** Placeholder-only copy, a validator that rejects any stray digit, bounded rewrites and a deterministic fallback in the same voice.
-- **Money safety.** Idempotent operations that never pay a provider twice, prepaid balances on a hold, debit and release ledger, and spending caps checked inside the same transaction.
-- **Multi-client.** Projects, scoped API keys and per-project profile allowlists; versioned prompt and voice profiles, chosen by a scripted side-by-side evaluation.
-- **Operations.** A fleet view of every customer's servers and players, the signed release catalog, and relays for sealed backups and support files.
-
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="assets/tellal-fleet-dark.png">
-  <img alt="Fleet view in Tellal's admin panel: customers, their Kadans servers, branches and devices, with faults listed first" src="assets/tellal-fleet-light.png">
-</picture>
-
-*The fleet view in Tellal's admin panel (the panel's header reads "Kadans AI"), shown with test fixtures: every customer's server, branches and players, faults first, with the update channel each customer follows.*
-
-[Tellal in depth →](docs/tellal.md)
+Copy and speech come from [Tellal](https://github.com/berkaybakac/tellal-case-study), the AI announcement platform I designed and built alongside Kadans: Claude (Anthropic) writes words around placeholders so the model never states a price, ElevenLabs speaks them, and prepaid balances, scoped keys and spending caps guard every paid call. Kadans sends only verified facts and keeps a deterministic standard sentence for when no copy can be had. Tellal also hosts the fleet hub, the signed release catalog and the sealed backup relay Kadans uses.
 
 ## How I work
 
@@ -96,7 +82,7 @@ I own the architecture, every decision and every release. I write each decision 
 - [Architecture](docs/architecture.md): components, the two planes, trust boundaries and integration with the customer's systems.
 - [Design decisions](docs/decisions.md): what was chosen, why, what it costs, and what was rejected.
 - [Engineering notes](docs/engineering-notes.md): how the system stays correct on store power, store networks and unattended servers.
-- [Tellal](docs/tellal.md): the AI announcement platform.
+- [Tellal case study](https://github.com/berkaybakac/tellal-case-study): the AI announcement platform.
 - [Milestones](docs/milestones.md): how it reached its first customer.
 
 [AnnounceFlow](https://github.com/berkaybakac/announceflow) was the per-store predecessor: one installation per store, in use at four locations. Kadans moves control to headquarters: the server describes the state each store should be in, and each store works out on its own what to play.
