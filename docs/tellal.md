@@ -1,7 +1,7 @@
 # Tellal
 
-Tellal has its own case study: **[berkaybakac/tellal-case-study](https://github.com/berkaybakac/tellal-case-study)** (LLM guardrails, cost control and idempotency for paid AI calls, multi-tenant keys and versioned prompts, operations).
+Tellal has its own case study: **[berkaybakac/tellal-case-study](https://github.com/berkaybakac/tellal-case-study)** (LLM guardrails, idempotency, spend limits and cost attribution, scoped keys and versioned profiles, operations).
 
-What Kadans uses from it: campaign copy and speech through its `/v1` API with request IDs derived from the exact facts, so one discount across many branches is written and spoken once; the fleet hub its servers report to; the signed release catalog; and relays for sealed nightly backups and device files.
+What Kadans uses from it: copy and speech through its `/v1` API with request IDs derived from the exact input, so identical input across branches is written and spoken once; the signed release catalog; relays for sealed nightly backups and device files; and a panel view of the Kadans fleet hub.
 
 [Back to the case study](../README.md)

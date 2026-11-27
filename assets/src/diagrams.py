@@ -108,17 +108,17 @@ CW = 204
 
 
 def price_to_speaker(t):
-    s = Svg(1200, 690, "From a price change in the ERP to an announcement in the store", t)
-    header(s, "From a price change to the speaker", "Fully automatic: facts come from the ERP, words from the model, every number from code.")
+    s = Svg(1200, 690, "From an ERP discount to an announcement in the store", t)
+    header(s, "From a price change to the speaker", "Eligible discounts flow in automatically: facts from the ERP, words from the model, numbers from code.")
     legend(s, 700, 50, [("server", "Kadans server", None), ("amber", "Tellal", None), ("pi", "Branch Pi", None)])
     steps = [
-        ("server", "ERP price drops", ["Go collector reads the", "customer's SQL Server", "ERP per branch"]),
+        ("server", "Eligible ERP discount", ["Go collector reads the", "customer's SQL Server", "ERP per branch"]),
         ("server", "Facts verified", ["product, old and new", "price, validity: checked", "in code, not by a model"]),
-        ("amber", "Model writes copy", ["a Turkish template", "with placeholders only,", "never a number"]),
+        ("amber", "Model writes copy", ["a Turkish template", "around placeholders;", "prices stay in code"]),
         ("amber", "Guard, then fill", ["any digit is rejected;", "code inserts the prices", "and the dates"]),
         ("amber", "Speech", ["one voice; rejected copy", "falls back to a verified", "sentence, same voice"]),
-        ("server", "Loudness", ["normalized to −16 LUFS", "and −1.5 dBTP,", "48 kHz MP3"]),
-        ("server", "Stored by hash", ["named by its SHA-256,", "stored once for every", "branch with the discount"]),
+        ("server", "Loudness", ["target −16 LUFS,", "−1.5 dBTP ceiling,", "48 kHz MP3"]),
+        ("server", "Stored by hash", ["named by its SHA-256;", "identical audio is", "stored only once"]),
         ("server", "New plan revision", ["declarative, versioned,", "byte-stable; no play", "command exists"]),
         ("pi", "Hint, then pull", ["MQTT: “new revision”;", "HTTPS fetch, every file", "verified by its hash"]),
         ("pi", "Duck and play", ["only if hours, prayer", "silence and a trusted", "clock all allow it"]),
@@ -168,7 +168,7 @@ def architecture(t):
     s.card(48, 156, 240, 88, "Customer ERP", ["SQL Server, read-only"], "muted")
     s.card(48, 296, 240, 88, "Headquarters panel", ["React · TypeScript"], "muted")
 
-    s.card(360, 156, 410, 268, "Kadans server", ["one Windows service on the customer's machine"], "server", size=13.5)
+    s.card(360, 156, 410, 268, "Kadans server", ["Windows services on the customer's machine"], "server", size=13.5)
     rows = [
         "FastAPI · PostgreSQL · audio store",
         "Go: ERP collector · prayer-time sync",
@@ -209,13 +209,13 @@ def architecture(t):
         s.path(d, color=color, width=2.2, dash=dash)
         s.lines(x + 9, 480, label, size=12.5, gap=17)
 
-    s.card(840, 156, 312, 120, "Tellal · AI platform", ["Claude copy behind guardrails", "ElevenLabs speech", "prepaid balances · spend caps"], "amber")
+    s.card(840, 156, 312, 120, "Tellal · AI gateway", ["Claude copy behind guardrails", "ElevenLabs speech", "prepaid balances · spend caps"], "amber")
     s.card(840, 306, 312, 92, "Fleet hub", ["health reports · Prometheus · Grafana"], "muted", size=13.5)
     s.card(840, 428, 312, 92, "Signed releases", ["Ed25519 · office canary first"], "muted", size=13.5)
     s.card(840, 550, 312, 92, "Support files · backups", ["backups sealed to the owner's key"], "muted", size=13.5)
 
     s.path("M770 196 H834", color="amber", width=2.2)
-    s.text(804, 188, "facts", size=12.5, color="amber", anchor="middle")
+    s.text(804, 188, "facts, text", size=12.5, color="amber", anchor="middle")
     s.path("M840 236 H776", color="amber", width=2.2)
     s.text(808, 254, "MP3", size=12.5, color="amber", anchor="middle")
     s.path("M770 352 H806 V596", head=False)
@@ -225,7 +225,7 @@ def architecture(t):
 
     legend(s, 40, 738, [
         ("server", "data plane: HTTPS, authoritative", None),
-        ("pi", "control plane: MQTT 5, hints only", "6 5"),
+        ("pi", "control plane: MQTT 5, hints, state", "6 5"),
         ("amber", "generation", None),
         ("arrow", "outbound only", None),
     ])
@@ -234,12 +234,12 @@ def architecture(t):
 
 def releases(t):
     s = Svg(1200, 420, "How a release reaches the stores, and what happens when it fails", t)
-    header(s, "Safe releases", "After the first installation, nobody at the customer runs a setup program again.")
+    header(s, "Safe releases", "Customer servers update themselves overnight and report the outcome.")
     steps = [
-        ("server", "Windows checks", ["clean runners: fresh,", "every upgrade path,", "rolled-back updates"]),
+        ("server", "Windows checks", ["clean runners: fresh,", "customer upgrade paths,", "rolled-back updates"]),
         ("server", "Sign", ["Ed25519 key that", "never leaves the", "owner's machine"]),
         ("server", "Office canary", ["installs it first and", "reports the outcome", "to the fleet hub"]),
-        ("server", "Customers, at night", ["each customer server,", "03:15, only the release", "the canary installed"]),
+        ("server", "Customers, at night", ["each customer server,", "03:15, by default only", "what the canary installed"]),
         ("pi", "Players follow", ["each Pi updates from", "its own server, only", "if its code changed"]),
     ]
     legend(s, 820, 50, [("server", "release and server", None), ("pi", "branch players", None)])
@@ -249,10 +249,10 @@ def releases(t):
         if i < 4:
             s.path(f"M{x + CW + 5} 173 H{COLS[i + 1] - 7}")
     s.text(40, 300, "If it fails", size=16, weight=650, color="red")
-    s.lines(40, 324, ["each layer stops", "or undoes itself"], size=13.5)
+    s.lines(40, 324, ["each stage has", "its own recovery"], size=13.5)
     fails = [
-        (2, ["stores are never", "offered that release"]),
-        (3, ["the installer rolls back", "and reports why"]),
+        (2, ["customers keep the", "release they run"]),
+        (3, ["a failed changeover", "restores and reports"]),
         (4, ["no healthy player in 90 s:", "switch back to the old one"]),
     ]
     for col, body in fails:

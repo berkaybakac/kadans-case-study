@@ -5,8 +5,8 @@ Each entry gives the choice, why, and what was rejected; costs where they matter
 ## Declarative desired state, not commands
 
 - **Choice.** The server publishes one versioned, byte-stable plan snapshot per branch, with every audio file named by the SHA-256 of its final bytes. Players reconcile toward it.
-- **Why.** A store that misses a message is correct after its next fetch, and an offline store keeps following its last plan. Downloads verify themselves, and one discount spoken in many branches is stored once.
-- **Cost.** Every behaviour has to be expressible as data. Players ignore unknown fields and reject unsupported schema versions without dropping their last-known-good plan; three opt-in schema versions added offline hours, prayer silence and playlists while schema 1 stays supported.
+- **Why.** A store that misses a message is correct after its next fetch, and an offline store keeps following its last plan. Downloads verify themselves, and identical audio for many branches is stored once.
+- **Cost.** Every behaviour has to be expressible as data. Players ignore unknown fields and reject unsupported schema versions without dropping their last-known-good plan; schemas 2 and 3 added offline hours, prayer silence and playlists while schema 1 stays supported.
 - **Rejected.** Play commands, which get lost or replayed.
 
 ## Hints over MQTT, truth over HTTPS
@@ -30,10 +30,10 @@ Each entry gives the choice, why, and what was rejected; costs where they matter
 - **Cost.** State has to be passed in explicitly. The policy exists in two deployables, so a test keeps both copies byte-identical.
 - **Rejected.** A shared runtime between device and server, more expensive than one duplicated module proven identical by a test.
 
-## Missing data degrades, never silences a store
+## Missing data degrades gracefully
 
-- **Choice.** A missing prayer calendar day reuses last year's same-day times; an untrusted clock holds only announcements while music follows hours. Each degraded state is reported, and the panel warns 30 days before a calendar ends.
-- **Why.** A store going silent because of missing data is worse than playing with a warning.
+- **Choice.** Past a prayer calendar's end, the server fills days from last year's same-day times; an untrusted clock holds only announcements while music follows hours. The panel warns 30 days before a calendar ends.
+- **Why.** A configured store going silent because of missing data is worse than playing with a warning.
 - **Rejected.** "Uncertainty means silence", the stricter rule this replaced.
 
 ## Language model behind guardrails
@@ -55,15 +55,15 @@ Each entry gives the choice, why, and what was rejected; costs where they matter
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="../assets/releases-dark.svg">
-  <img alt="Release path: Windows checks, signing, office canary, customer servers at night, players follow; each stage stops or rolls back on failure" src="../assets/releases-light.svg">
+  <img alt="Release path: Windows checks, signing, office canary, customer servers at night, players follow; each stage with its own recovery" src="../assets/releases-light.svg">
 </picture>
 
-- **Choice.** Releases are signed offline with Ed25519 over a domain-separated message. Each night the customer server's Go self-update checks for the release it is offered; when there is a new one, it verifies host, signature, size and SHA-256, installs silently and rolls back from any failed step. By default a customer is offered only the release the office canary reported installing successfully. Pis pull the player of their own server's release.
-- **Why.** Nobody at the customer runs a setup program after the first installation; TLS proves who you talk to, the signature proves what you install, and the canary proves that it works.
+- **Choice.** Releases are signed offline with Ed25519 over a domain-separated message. Each night the customer server's Go self-update checks for the release it is offered; when there is a new one, it verifies host, signature, size and SHA-256, installs silently, and restores the previous release if the service changeover fails. By default a customer is offered only the release the office canary reported installing successfully. Pis pull the player of their own server's release.
+- **Why.** Nobody at the customer has to run a setup program; TLS proves who you talk to, the signature proves what you install, and the canary proves that it works.
 - **Cost.** A fix reaches customers a night after the canary takes it.
 - **Rejected.** Pis updating from a cloud service, which would need per-device work and data leaving the customer's network.
 
-## Credentials without tokens to steal
+## Credentials a stolen database cannot use
 
 - **Choice.** Device credentials are 256 random bits; the server stores only their SHA-256 digest, compares in constant time and derives scope from the credential. Rotation overlaps old and new credentials. Credentials are issued to a chosen branch by an operator, or sealed to the owner's key by the customer's own server for a branch still waiting for its Pi.
 - **Why.** A stolen database holds no usable credential, a credential rotates without taking a store offline, and a poll costs no database write.

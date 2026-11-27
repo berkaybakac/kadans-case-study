@@ -14,19 +14,19 @@ Players raise and clear each problem once, and their problem state is written at
 
 ### Duplicate device-credential detection
 
-The server keeps the last address of each authenticated device in memory and flags a credential whose address switches four or more times within ten minutes as a duplicate device, naming both addresses in the panel and the fleet report. A single address change is a DHCP lease; alternation means two devices. Detection needs no per-request database write, and the hub accepts new problem names, so an older hub never rejects a newer warning.
+The server keeps the last address of each authenticated device in memory and flags a credential whose address switches four or more times within ten minutes as a likely duplicate device in the panel, with both addresses, and in the fleet report. One address change is a DHCP lease; alternation suggests two devices. Detection needs no per-request database write.
 
 *Guard:* server device-watch tests.
 
 ### Silent-branch detection
 
-Publishing proves nothing about what a store played. Players upload playback evidence in batches, advancing their saved offset only after the server accepts a batch, and the server deduplicates retries by fingerprint. Scheduled announcements that expire without a played report are counted per branch, with the device's reason, and shown as the branch's first issue.
+Publishing proves nothing about what a store played. Players upload playback evidence in batches from a saved offset, the server deduplicates retries by fingerprint, and a permanently rejected batch cannot block later ones. Announcements that expire without a played report are counted per branch, with the player's reason or a missing-report flag, and shown first in the campaign summary.
 
 *Guard:* device-events, uploader and playback-evidence tests; an end-to-end rehearsal on a Windows server, SQL Server and a Pi 4.
 
 ### Server-trusted clock
 
-A Raspberry Pi has no battery-backed clock, and VPN-only branch networks have no internet time. When network time is unavailable, the updater reads the server's time over the already-verified TLS connection, sets the clock if it is more than 2 seconds off, and the player trusts it for 24 hours of that boot; a Pi loses time only at reboot. Until then, music plays and announcements wait.
+A Raspberry Pi has no battery-backed clock, and a VPN-only branch network may have no internet time. When network time is unavailable, the updater reads the server's time over the already-verified TLS connection, sets the clock if it is more than 2 seconds off, and the player trusts it for 24 hours of that boot; a Pi loses time only at reboot. Until then, music plays and announcements wait.
 
 *Guard:* updater tests and shared sound-policy cases for an untrusted clock.
 
@@ -38,13 +38,13 @@ Each announcement is claimed on disk before the music ducks. After a restart, an
 
 ### Offline prayer silence
 
-Pis read hash-addressed quiet calendars for their district, fade music out and in, and drop an interrupted announcement rather than replay it. Silence covers both dawn-call times, and new districts are covered within a minute.
+Pis read hash-addressed quiet calendars for their district, fade music out and in, and drop an interrupted announcement rather than replay it. Silence covers both dawn-call times, and new districts get calendars soon after assignment.
 
 *Guard:* one shared file of boundary cases (overnight, daylight saving, interval edges) runs on both device and server; a rehearsed prayer interval silenced a physical Pi on time and resumed.
 
 ### Audio proven on hardware
 
-Speech and music are normalized to −16 LUFS and −1.5 dBTP, and speech is re-measured before it is published. I traced silent audio on Raspberry Pi 3B+ hardware, with no error reported, to an ALSA `dmix` stage that opened its output but never advanced it; both players now open the card through `plug`.
+Speech and music target −16 LUFS with a −1.5 dBTP ceiling, and speech is re-measured before it is published. I traced silent audio on Raspberry Pi 3B+ hardware, with no error reported, to an ALSA `dmix` stage that opened its output but never advanced it; both players now open the card through `plug`.
 
 *Guard:* normalizer tests, an ALSA configuration test, and an acceptance check by ear on the physical Pi.
 
@@ -64,7 +64,7 @@ I traced a shutdown deadlock inside the third-party MQTT library to a recursive 
 
 ### Restores that keep device trust
 
-Pis trust the server's internal certificate authority, so backups carry it and a restored server keeps every device's trust. Nightly off-site copies are sealed per file with AES-256-GCM keys wrapped by the owner's RSA key, so the relay cannot read them. Retention pruning locks rows and deletes objects first, so concurrent writers never lose audio.
+Pis trust the server's internal certificate authority, so backups carry it and a server restored at the same address keeps every device's trust. Nightly off-site copies are sealed with AES-256-GCM keys wrapped by the owner's RSA key, so the relay cannot read them. Retention pruning locks rows and deletes objects first, so concurrent writers never lose audio.
 
 *Guard:* a restore rehearsal from an off-site copy matched every table row for row; retention race tests.
 
@@ -78,13 +78,13 @@ A new ERP connection waits as a candidate with a sealed password and replaces th
 
 ### Clean-Windows release pipeline
 
-Every installer that may reach a customer runs through a GitHub Actions matrix on clean Windows runners: a fresh install under Turkish regional settings, an upgrade from every release customers run, and updates forced to roll back with and without a database restore, with lint under PowerShell 5.1 and 7. Building both test installers from one payload in parallel halved the build time.
+Every installer that may reach a customer runs through a GitHub Actions matrix on clean Windows runners: a fresh install under Turkish regional settings, an upgrade from each maintained customer release, and updates forced to roll back with and without a database restore, linted, with StrictMode checks under PowerShell 5.1 and 7. Building both test installers from one payload in parallel halved the build time.
 
-*Guard:* the workflow itself; publishing signs the exact installer that was tested.
+*Guard:* the workflow itself; by default, publishing signs the exact installer that was tested.
 
 ### Transactional upgrades with a reported outcome
 
-Any failure after the service stops restores the previous release and database. The outcome, failing step and reason reach the fleet hub, and the customer sees one plain sentence that asks for action only when they can fix it.
+A failed service changeover restores the previous release and, if the backup finished, its database. The outcome, failing step and reason reach the fleet hub, and the customer sees one plain sentence that asks for action only when they can fix it.
 
 *Guard:* installer rollback scenarios in the clean-runner matrix.
 
@@ -92,7 +92,7 @@ Any failure after the service stops restores the previous release and database. 
 
 A systemd timer pulls the player matching its server's release, downloads only when the code changed, builds it beside the running one and switches by directory rename. If the service is not healthy after 90 seconds, it switches back.
 
-*Guard:* a deliberately crashing package rolled back within 90 seconds with the failure visible in the panel.
+*Guard:* a deliberately crashing package rolled back at the 90-second check, its failure visible in the panel.
 
 ### Validated on real Windows 11
 
